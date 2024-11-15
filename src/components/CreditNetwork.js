@@ -105,12 +105,7 @@ const NetworkGraph = ({ nodes, connections, activeFlow, step }) => {
             stroke={activeFlow?.path?.includes(name) ? '#059669' : '#e2e8f0'}
             strokeWidth="2"
           />
-          {name === 'فروشگاه' ? (
-            <Store
-              className={`w-6 h-6 ${activeFlow?.path?.includes(name) ? 'text-white' : 'text-gray-600'}`}
-              style={{ transform: 'translate(-12px, -12px)' }}
-            />
-          ) : null}
+
           <text
             textAnchor="middle"
             dy="-10"
@@ -143,6 +138,29 @@ const NetworkGraph = ({ nodes, connections, activeFlow, step }) => {
   );
 };
 
+const generatePath = (start, end) => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const midX = (start.x + end.x) / 2 - dy * 0.2;
+  const midY = (start.y + end.y) / 2 + dx * 0.2;
+  return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+};
+
+const calculateLength = (start, end) => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
+const calculateOffset = (start, end, progress) => {
+  const length = calculateLength(start, end);
+  return length * (1 - progress);
+};
+
+const isActivePath = (connection, activeFlow) => {
+  return activeFlow?.path?.includes(connection.from) && 
+         activeFlow?.path?.includes(connection.to);
+};
 const StepDescription = ({ step, isActive }) => (
   <Card className={`
     transition-all duration-300
@@ -427,23 +445,11 @@ return (
           نمایش جریان اعتبار در شبکه اعتماد
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Main content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Graph section */}
-          <div className="lg:col-span-2 bg-white rounded-lg p-4">
-            <NetworkGraph
-              nodes={network.nodes}
-              connections={network.connections}
-              activeFlow={steps[step]?.flow}
-              step={step}
-            />
-          </div>
-          
-          {/* Steps section - now with fixed height and scroll */}
-          <div className="lg:h-[600px] flex flex-col">
-            {/* Steps cards in scrollable container */}
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Left Side - Steps List */}
+          <div className="lg:col-span-2 h-[700px] overflow-y-auto pr-4 border-l">
+            <div className="space-y-4 sticky top-0">
               {steps.map((stepData, idx) => (
                 <StepDescription
                   key={idx}
@@ -452,40 +458,43 @@ return (
                 />
               ))}
             </div>
-            
-            {/* Navigation buttons in fixed position */}
-            <div className="sticky bottom-0 bg-white pt-4 border-t">
-              <div className="flex justify-between gap-4">
-                <Button
-                  onClick={() => {
-                    setStep(Math.max(step - 1, 0));
-                    // Scroll to top of content if needed
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={step === 0}
-                  variant="outline"
-                >
-                  مرحله قبل
-                </Button>
-                <Button
-                  onClick={() => {
-                    setStep(Math.min(step + 1, steps.length - 1));
-                    // Scroll to top of content if needed
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={step === steps.length - 1}
-                  className="bg-gradient-to-l from-teal-600 to-emerald-500 text-white"
-                >
-                  مرحله بعد
-                </Button>
-              </div>
+          </div>
+ 
+          {/* Right Side - Graph & Controls */}
+          <div className="lg:col-span-3 flex flex-col items-center justify-between h-[700px]">
+            <div className="flex-1 w-full bg-white rounded-lg p-4 flex items-center justify-center">
+              <NetworkGraph
+                nodes={network.nodes}
+                connections={network.connections}
+                activeFlow={steps[step]?.flow}
+                step={step}
+              />
+            </div>
+ 
+            <div className="w-full pt-4 flex justify-center gap-8">
+              <Button
+                onClick={() => setStep(Math.max(step - 1, 0))}
+                disabled={step === 0}
+                variant="outline"
+                className="w-32"
+              >
+                مرحله قبل
+              </Button>
+              
+              <Button
+                onClick={() => setStep(Math.min(step + 1, steps.length - 1))}
+                disabled={step === steps.length - 1}
+                className="bg-gradient-to-l from-teal-600 to-emerald-500 text-white w-32"
+              >
+                مرحله بعد
+              </Button>
             </div>
           </div>
         </div>
       </CardContent>
     </Card>
   </div>
-);
+ );
 };
 
 export default CreditFlowNetwork;
