@@ -163,12 +163,12 @@ const isActivePath = (connection, activeFlow) => {
 };
 const StepDescription = ({ step, isActive }) => (
   <Card className={`
-    transition-all duration-300
-    ${isActive ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'}
+    transition-all duration-300 rounded-lg shadow-sm
+    ${isActive ? 'border-2 border-emerald-500 bg-emerald-50' : 'border border-gray-200 bg-white'}
   `}>
     <CardContent className="p-4">
       <div className="text-right space-y-2">
-        <div className="font-bold">{step.title}</div>
+        <div className="font-bold text-gray-900">{step.title}</div>
         <div className="text-sm text-gray-600 leading-6">{step.description}</div>
       </div>
     </CardContent>
